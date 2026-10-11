@@ -1,11 +1,8 @@
-
 import time
-
 from playwright.sync_api import (
     sync_playwright,
     TimeoutError as PlaywrightTimeoutError,
 )
-
 from pages.locators import TeamsSignLocators
 
 
@@ -47,7 +44,7 @@ class TeamsSign:
                 except PlaywrightTimeoutError:
                     continue
 
-            time.sleep(0.5)
+            self.page.wait_for_timeout(500)
 
         raise TimeoutError("Login email field was not found")
 
@@ -87,60 +84,63 @@ class TeamsSign:
             no_button.click()
         except PlaywrightTimeoutError:
             pass
-        time.sleep(20)
+
+        # Dynamically wait for the post-login dashboard navigation to be ready
+        nav_button = (
+            self.page.locator(self.teams.ACTIVITY_BUTTON)
+            .or_(self.page.locator(self.teams.CHAT_BUTTON))
+            .or_(self.page.locator(self.teams.CALENDAR_BUTTON))
+        )
+        try:
+            nav_button.first.wait_for(state="visible", timeout=self.timeout * 1000)
+        except PlaywrightTimeoutError:
+            self.page.wait_for_load_state("domcontentloaded")
 
     def click_chat_button(self):
-        self.page.locator(
-            self.teams.CHAT_BUTTON
-        ).click()
-        time.sleep(20)
+        chat_btn = self.page.locator(self.teams.CHAT_BUTTON)
+        chat_btn.wait_for(state="visible")
+        chat_btn.click()
 
     def click_meet_button(self):
-        self.page.locator(
-            self.teams.MEET_BUTTON
-        ).click()
-        time.sleep(20)
+        meet_btn = self.page.locator(self.teams.MEET_BUTTON)
+        meet_btn.wait_for(state="visible")
+        meet_btn.click()
 
     def click_people_button(self):
-        self.page.locator(
-            self.teams.PEOPLE_BUTTON
-        ).click()
-        time.sleep(20)
+        people_btn = self.page.locator(self.teams.PEOPLE_BUTTON)
+        people_btn.wait_for(state="visible")
+        people_btn.click()
 
     def click_copilot_button(self):
-        self.page.locator(
-            self.teams.COPILOT_BUTTON
-        ).click()
-        time.sleep(20)
+        copilot_btn = self.page.locator(self.teams.COPILOT_BUTTON)
+        copilot_btn.wait_for(state="visible")
+        copilot_btn.click()
 
     def click_communities_button(self):
-        self.page.locator(
-            self.teams.COMMUNITIES_BUTTON
-        ).click()
-        time.sleep(20)
+        communities_btn = self.page.locator(self.teams.COMMUNITIES_BUTTON)
+        communities_btn.wait_for(state="visible")
+        communities_btn.click()
 
     def click_activity_button(self):
-        self.page.locator(
-            self.teams.ACTIVITY_BUTTON
-        ).click()
-        time.sleep(20)
+        activity_btn = self.page.locator(self.teams.ACTIVITY_BUTTON)
+        activity_btn.wait_for(state="visible")
+        activity_btn.click()
 
-    def click_calender_button(self):
-        self.page.locator(
-            self.teams.CALENDAR_BUTTON
-        ).click()
-        time.sleep(20)
+    def click_calendar_button(self):
+        calendar_btn = self.page.locator(self.teams.CALENDAR_BUTTON)
+        calendar_btn.wait_for(state="visible")
+        calendar_btn.click()
 
-        self.page.locator(
-            self.teams.NEW_MEETING_BUTTON
-        ).click()
-        time.sleep(20)
+        new_meeting = self.page.locator(self.teams.NEW_MEETING_BUTTON)
+        new_meeting.wait_for(state="visible")
+        new_meeting.click()
 
-        # This assumes the meeting form is ready to save.
-        self.page.locator(
-            self.teams.SAVE_BUTTON
-        ).click()
-        time.sleep(20)
+        save_btn = self.page.locator(self.teams.SAVE_BUTTON)
+        save_btn.wait_for(state="visible")
+        save_btn.click()
+
+    # Backwards compatibility alias for typo
+    click_calender_button = click_calendar_button
 
     def close_browser(self):
         if self.browser:
@@ -148,20 +148,3 @@ class TeamsSign:
 
         if self.playwright:
             self.playwright.stop()
-
-
-# if __name__ == "__main__":
-#     teams = TeamsSign()
-#     teams.open_browser()
-#     teams.sign_in_teams()
-#     teams.send_email_id("starlocktemp@outlook.com")
-#     teams.enter_email_password("rakesh@1234")
-#     teams.click_chat_button()
-#     teams.click_meet_button()
-#     teams.click_people_button()
-#     teams.click_copilot_button()
-#     teams.click_communities_button()
-#     teams.click_activity_button()
-#     teams.click_calender_button()
-#     teams.close_browser()
-
